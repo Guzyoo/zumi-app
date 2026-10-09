@@ -1,58 +1,160 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🚗 Zumi App - Real-Time Smart Parking Monitoring System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+<div align="center">
+  <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel">
+  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/YOLOv8-AI_Detection-00FFFF?style=for-the-badge&logo=ultralytics&logoColor=black" alt="YOLOv8">
+  <img src="https://img.shields.io/badge/Reverb-WebSocket-black?style=for-the-badge" alt="Laravel Reverb">
+</div>
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Sistem *Smart Parking* berbasis AI yang mengintegrasikan deteksi kendaraan secara *real-time* menggunakan **YOLOv8**, layanan pemrosesan video **FastAPI**, backend data & manajemen **Laravel 11**, serta komunikasi WebSocket instan menggunakan **Laravel Reverb**.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ System Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Sebelum menjalankan sistem, pastikan perangkat kamu sudah terinstall:
 
-## Learning Laravel
+* **PHP**: `>= 8.2`
+* **Composer**: `>= 2.5`
+* **Node.js & NPM**: `>= 18.x`
+* **Python**: `>= 3.10`
+* **Webcam / Camera Stream**: Kamera bawaan laptop, IP Camera, atau aplikasi IP Webcam HP (seperti DroidCam).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🚀 Setup & Instalasi
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 1. Setup Backend Laravel (`zumi-app`)
 
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
+Masuk ke folder proyek Laravel dan install semua dependensi:
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+cd zumi-app
+composer install
+npm install
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Salin file `.env.example` menjadi `.env` lalu sesuaikan konfigurasi Reverb & Database:
+```env
+APP_NAME="Zumi Parking"
+APP_URL=http://localhost:8000
 
-## Contributing
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=zumi_parking
+DB_USERNAME=root
+DB_PASSWORD=
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Konfigurasi WebSocket Reverb
+BROADCAST_CONNECTION=reverb
+REVERB_APP_ID=zumi-app-id
+REVERB_APP_KEY=zumi-app-key
+REVERB_APP_SECRET=zumi-app-secret
+REVERB_HOST="localhost"
+REVERB_PORT=8080
+REVERB_SCHEME="http"
+```
 
-## Code of Conduct
+Jalankan migrasi database:
+```bash
+php artisan migrate
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 2. Setup AI Detection Service (`fastapi-service`)
 
-## Security Vulnerabilities
+Masuk ke folder FastAPI dan buat *virtual environment* Python:
+```bash
+cd fastapi-service
+python -m venv venv
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Aktivasi di Linux/MacOS:
+source venv/bin/activate
+# Aktivasi di Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+```
 
-## License
+Install dependensi Python:
+```bash
+pip install -r requirements.txt
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 🎯 Panduan Penandaan Slot Parkir (ROI)
+
+Setiap kali posisi kamera berubah, kamu **wajib** melakukan *mapping* koordinat area parkir:
+
+1. Atur `CAMERA_SOURCE` di `fastapi-service/select_roi.py` (misal `0` untuk webcam laptop).
+2. Jalankan script penanda ROI:
+   ```bash
+   python select_roi.py
+   ```
+3. Klik 4 titik sudut area parkir pertama di jendela video, lalu ketik kode slot (contoh: `A1`) di terminal dan tekan **Enter**.
+4. Ulangi untuk slot lainnya. Jika sudah selesai, tekan tombol **`q`** pada jendela video untuk menyimpan file `slots.json`.
+
+---
+
+## ⚡ Menjalankan Layanan (Execution)
+
+Untuk menjalankan sistem ini secara penuh di mode *development*, kamu perlu membuka **4 Terminal terpisah**:
+
+<details open>
+<summary><b>Terminal 1: Laravel Web Server</b></summary>
+Berfungsi menjalankan backend aplikasi Zumi.
+
+```bash
+cd zumi-app
+php artisan serve
+```
+</details>
+
+<details open>
+<summary><b>Terminal 2: Laravel Vite (Frontend Assets)</b></summary>
+Berfungsi meng-compile CSS Tailwind dan file JS Laravel Echo agar dashboard berfungsi.
+
+```bash
+cd zumi-app
+npm run dev
+```
+</details>
+
+<details open>
+<summary><b>Terminal 3: Laravel Reverb (WebSocket)</b></summary>
+Berfungsi menangani komunikasi *real-time* antara FastAPI dan Dashboard.
+
+```bash
+cd zumi-app
+php artisan reverb:start
+```
+</details>
+
+<details open>
+<summary><b>Terminal 4: FastAPI & YOLO Engine</b></summary>
+Berfungsi menjalankan server pendeteksi kamera.
+
+```bash
+cd fastapi-service
+uvicorn main:app --reload --port 8001
+```
+</details>
+
+---
+
+## 💻 Cara Penggunaan Dashboard
+
+1. **Mulai Deteksi AI**:
+   Buka browser dan akses endpoint berikut untuk menyalakan kamera dan sistem sinkronisasi:
+   👉 `http://127.0.0.1:8001/start-detection`
+
+2. **Buka Live Dashboard**:
+   Buka halaman utama Laravel di:
+   👉 `http://127.0.0.1:8000`
+   *(Kamu akan melihat video CCTV di sebelah kiri dan status slot real-time di kanan).*
+
+3. **Kelola Slot (Admin)**:
+   Klik tombol **⚙️ Kelola Slot** di pojok kanan atas dashboard untuk menambah, mengedit, atau menghapus kode slot parkir dari database.
+
+4. **Hentikan Deteksi AI**:
+   Untuk mematikan kamera dengan aman:
+   👉 `http://127.0.0.1:8001/stop-detection`
