@@ -1,43 +1,54 @@
-# 🚗 Zumi App - Real-Time Smart Parking Monitoring System
+🚗 Zumi App - Real-Time Smart Parking System
 
-<div align="center">
-  <img src="https://img.shields.io/badge/Laravel-11.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel">
-  <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/YOLOv8-AI_Detection-00FFFF?style=for-the-badge&logo=ultralytics&logoColor=black" alt="YOLOv8">
-  <img src="https://img.shields.io/badge/Reverb-WebSocket-black?style=for-the-badge" alt="Laravel Reverb">
-</div>
+Sistem Smart Parking berbasis AI yang mengintegrasikan deteksi kendaraan secara real-time menggunakan YOLOv8, pemrosesan aliran video FastAPI, backend manajemen Laravel 11, dan komunikasi WebSocket secara langsung melalui Laravel Reverb.
 
----
+💻 Kebutuhan Sistem (System Requirements)
 
-Sistem *Smart Parking* berbasis AI yang mengintegrasikan deteksi kendaraan secara *real-time* menggunakan **YOLOv8**, layanan pemrosesan video **FastAPI**, backend data & manajemen **Laravel 11**, serta komunikasi WebSocket instan menggunakan **Laravel Reverb**.
+1. Perangkat Lunak Utama
 
-## 🛠️ System Requirements
+PHP: >= 8.2
 
-Sebelum menjalankan sistem, pastikan perangkat kamu sudah terinstall:
+Composer: >= 2.5
 
-* **PHP**: `>= 8.2`
-* **Composer**: `>= 2.5`
-* **Node.js & NPM**: `>= 18.x`
-* **Python**: `>= 3.10`
-* **Webcam / Camera Stream**: Kamera bawaan laptop, IP Camera, atau aplikasi IP Webcam HP (seperti DroidCam).
+Node.js & NPM: >= 18.x
 
----
+Python: >= 3.10
 
-## 🚀 Setup & Instalasi
+MySQL / MariaDB Database
 
-### 1. Setup Backend Laravel (`zumi-app`)
+2. Sumber Kamera
 
-Masuk ke folder proyek Laravel dan install semua dependensi:
-```bash
+Webcam bawaan laptop, kamera USB, IP Camera (RTSP), atau aplikasi IP Webcam HP (seperti DroidCam / IP Webcam).
+
+🛠️ Instalasi & Full Setup
+
+A. Setup Backend Laravel (zumi-app)
+
+Buka terminal dan masuk ke direktori Laravel:
+
 cd zumi-app
+
+
+Install dependensi PHP dan Node.js:
+
 composer install
 npm install
-```
 
-Salin file `.env.example` menjadi `.env` lalu sesuaikan konfigurasi Reverb & Database:
-```env
+
+Buat file konfig .env dari salinan contoh:
+
+cp .env.example .env
+
+
+Generasi App Key Laravel:
+
+php artisan key:generate
+
+
+Sesuaikan konfigurasi Database & Reverb di file .env:
+
 APP_NAME="Zumi Parking"
-APP_URL=http://localhost:8000
+APP_URL=http://127.0.0.1:8000
 
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -46,115 +57,133 @@ DB_DATABASE=zumi_parking
 DB_USERNAME=root
 DB_PASSWORD=
 
-# Konfigurasi WebSocket Reverb
 BROADCAST_CONNECTION=reverb
+
 REVERB_APP_ID=zumi-app-id
 REVERB_APP_KEY=zumi-app-key
 REVERB_APP_SECRET=zumi-app-secret
 REVERB_HOST="localhost"
 REVERB_PORT=8080
 REVERB_SCHEME="http"
-```
+VITE_REVERB_APP_KEY="${REVERB_APP_KEY}"
+VITE_REVERB_HOST="${REVERB_HOST}"
+VITE_REVERB_PORT="${REVERB_PORT}"
+VITE_REVERB_SCHEME="${REVERB_SCHEME}"
 
-Jalankan migrasi database:
-```bash
+
+Jalankan migrasi database dan build asset frontend:
+
 php artisan migrate
-```
+npm run build
 
-### 2. Setup AI Detection Service (`fastapi-service`)
 
-Masuk ke folder FastAPI dan buat *virtual environment* Python:
-```bash
+B. Setup AI Engine FastAPI (fastapi-service)
+
+Masuk ke direktori service FastAPI:
+
 cd fastapi-service
+
+
+Buat dan aktifkan Virtual Environment Python:
+
+Windows:
+
 python -m venv venv
-
-# Aktivasi di Linux/MacOS:
-source venv/bin/activate
-# Aktivasi di Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
-```
 
-Install dependensi Python:
-```bash
+
+Linux/MacOS:
+
+python3 -m venv venv
+source venv/bin/activate
+
+
+Install seluruh paket requirements:
+
 pip install -r requirements.txt
-```
 
----
 
-## 🎯 Panduan Penandaan Slot Parkir (ROI)
+🎯 Panduan Penggunaan & Pemetaan ROI Parkir
 
-Setiap kali posisi kamera berubah, kamu **wajib** melakukan *mapping* koordinat area parkir:
+Sebelum menjalankan pendeteksian AI, Anda wajib menentukan titik koordinat polygon area parkir (Region of Interest) sesuai sudut pandang kamera yang diam (static camera).
 
-1. Atur `CAMERA_SOURCE` di `fastapi-service/select_roi.py` (misal `0` untuk webcam laptop).
-2. Jalankan script penanda ROI:
-   ```bash
-   python select_roi.py
-   ```
-3. Klik 4 titik sudut area parkir pertama di jendela video, lalu ketik kode slot (contoh: `A1`) di terminal dan tekan **Enter**.
-4. Ulangi untuk slot lainnya. Jika sudah selesai, tekan tombol **`q`** pada jendela video untuk menyimpan file `slots.json`.
+1. Menandai Slot Parkir (select_roi.py)
 
----
+Buka file select_roi.py, lalu sesuaikan variabel CAMERA_SOURCE:
 
-## ⚡ Menjalankan Layanan (Execution)
+0 : Webcam Bawaan
 
-Untuk menjalankan sistem ini secara penuh di mode *development*, kamu perlu membuka **4 Terminal terpisah**:
+"video.mp4" : File Video Testing
 
-<details open>
-<summary><b>Terminal 1: Laravel Web Server</b></summary>
-Berfungsi menjalankan backend aplikasi Zumi.
+"http://192.168.1.X:8080/video" : Stream IP Webcam HP
 
-```bash
+Jalankan script penanda ROI:
+
+python select_roi.py
+
+
+Langkah Penandaan:
+
+Klik 4 kali di sudut area parkir pada jendela video yang muncul.
+
+Lihat terminal, masukkan kode slot (misal: A1), lalu tekan Enter.
+
+Ulangi untuk slot berikutnya (A2, A3, dst.).
+
+Tekan tombol q di keyboard pada jendela video untuk menyimpan hasil koordinat ke file slots.json.
+
+🚀 Cara Menjalankan Aplikasi (Full Execution Flow)
+
+Untuk menjalankan seluruh ekosistem aplikasi secara utuh, buka 4 Terminal terpisah:
+
+Terminal 1 — Laravel HTTP Server
+
 cd zumi-app
 php artisan serve
-```
-</details>
 
-<details open>
-<summary><b>Terminal 2: Laravel Vite (Frontend Assets)</b></summary>
-Berfungsi meng-compile CSS Tailwind dan file JS Laravel Echo agar dashboard berfungsi.
 
-```bash
-cd zumi-app
-npm run dev
-```
-</details>
+(Akses Web Dashboard di: http://127.0.0.1:8000)
 
-<details open>
-<summary><b>Terminal 3: Laravel Reverb (WebSocket)</b></summary>
-Berfungsi menangani komunikasi *real-time* antara FastAPI dan Dashboard.
+Terminal 2 — Laravel Reverb WebSocket Server
 
-```bash
 cd zumi-app
 php artisan reverb:start
-```
-</details>
 
-<details open>
-<summary><b>Terminal 4: FastAPI & YOLO Engine</b></summary>
-Berfungsi menjalankan server pendeteksi kamera.
 
-```bash
+(Menangani penerimaan data instan dari backend ke browser via WebSocket)
+
+Terminal 3 — Vite Assets Hot-Reload (Pengembangan UI)
+
+cd zumi-app
+npm run dev
+
+
+Terminal 4 — FastAPI Service & Uvicorn Engine
+
 cd fastapi-service
+
+# Pastikan venv aktif
+# Windows: .\venv\Scripts\Activate.ps1
+# Linux/Mac: source venv/bin/activate
+
 uvicorn main:app --reload --port 8001
-```
-</details>
 
----
 
-## 💻 Cara Penggunaan Dashboard
+📡 Mengontrol Deteksi AI dari Browser
 
-1. **Mulai Deteksi AI**:
-   Buka browser dan akses endpoint berikut untuk menyalakan kamera dan sistem sinkronisasi:
-   👉 `http://127.0.0.1:8001/start-detection`
+Setelah keempat terminal di atas berjalan:
 
-2. **Buka Live Dashboard**:
-   Buka halaman utama Laravel di:
-   👉 `http://127.0.0.1:8000`
-   *(Kamu akan melihat video CCTV di sebelah kiri dan status slot real-time di kanan).*
+Mulai Deteksi Real-Time:
+Buka browser dan kunjungi:
+http://127.0.0.1:8001/start-detection
 
-3. **Kelola Slot (Admin)**:
-   Klik tombol **⚙️ Kelola Slot** di pojok kanan atas dashboard untuk menambah, mengedit, atau menghapus kode slot parkir dari database.
+Buka Monitoring Dashboard:
+Akses http://127.0.0.1:8000.
+Tampilan Live Feed CCTV akan langsung muncul di box sebelah kiri, dan status slot parkir akan memperbarui warnanya (Merah = Terisi, Hijau = Kosong) secara otomatis tanpa refresh.
 
-4. **Hentikan Deteksi AI**:
-   Untuk mematikan kamera dengan aman:
-   👉 `http://127.0.0.1:8001/stop-detection`
+Menghentikan Deteksi AI:
+Kunjungi URL berikut di browser untuk menghentikan proses background loop YOLO:
+http://127.0.0.1:8001/stop-detection
+
+Kelola Slot Parkir (Admin):
+Akses http://127.0.0.1:8000/admin/slots untuk menambah, mengubah, atau menghapus slot dari database.
